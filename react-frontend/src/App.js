@@ -5,7 +5,8 @@ function App() {
   return (
     <div className="asdasd">
       <InfoBar />
-      <ChoseTestParameters />
+      <ChoseTestParameters parametersFor="Text 1" />
+      <ChoseTestParameters parametersFor="Text 2" />
     </div>
   );
 }
