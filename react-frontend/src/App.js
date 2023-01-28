@@ -1,12 +1,15 @@
+import * as React from 'react';
 import {useState, useEffect, useRef} from 'react';
 import InfoBar from "./components/InfoBar";
 import ChoseTestParameters from "./components/ChoseTestParameters";
+import { useSelector } from 'react-redux'
 
 function App() {
   const [showResults, setShowResults] = useState(false);
   const [comparisonData, setComparisonData] = useState([]);
   const timePreFetch = useRef();
   const timePostFetch = useRef();
+  const dbmsType = useSelector(state => state.dbms.value);
 
   const parentToChild = () => {
     setShowResults(true);
@@ -14,7 +17,7 @@ function App() {
   
     useEffect(() => {
       timePreFetch.current = (new Date()).getTime();
-      const url = `http://localhost:8080/porownajTexty?textLength=krotkie&textType=varchar&czasWyslaniaRequestuZFrontendu=${timePreFetch.current}`
+      const url = `http://localhost:8080/porownajTexty?textLength=krotkie&textType=varchar&requestSentTimeStamp=${timePreFetch.current}&dbmsType=${dbmsType}`
       fetch(url)
          .then(response => {
             return response.json()
@@ -32,8 +35,7 @@ function App() {
   return (
     <div className="asdasd">
       <InfoBar />
-      <ChoseTestParameters parametersFor="Text 1" />
-      <ChoseTestParameters parametersFor="Text 2" />
+      <ChoseTestParameters parametersFor="Text parameters" />
       <button onClick={parentToChild}> Compare texts </button>
       {showResults && <div>
             <h1>Results</h1>

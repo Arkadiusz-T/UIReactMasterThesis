@@ -1,3 +1,4 @@
+import * as React from 'react';
 import ChooseDlugoscTekstu from "./TestParameter";
 import ChooseTypZmiennej from "./ChooseTypZmiennej";
 
