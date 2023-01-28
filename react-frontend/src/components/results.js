@@ -1,3 +1,4 @@
+import * as React from 'react';
 function Results(props){
     return(
         <div>
