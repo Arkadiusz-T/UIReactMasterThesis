@@ -1,49 +1,67 @@
 import * as React from 'react';
-import {useState, useEffect, useRef} from 'react';
+import {useState, useRef} from 'react';
 import InfoBar from "./components/InfoBar";
 import ChoseTestParameters from "./components/ChoseTestParameters";
-import { useSelector } from 'react-redux'
 
 function App() {
-  const [showResults, setShowResults] = useState(false);
-  const [comparisonData, setComparisonData] = useState([]);
   const timePreFetch = useRef();
   const timePostFetch = useRef();
-  const dbmsType = useSelector(state => state.dbms.value);
 
-  const parentToChild = () => {
-    setShowResults(true);
-  }
+
+  const [data, setData] = useState({data: []});
+  const [isLoading, setIsLoading] = useState(true);
+  const [err, setErr] = useState('');
   
-    useEffect(() => {
+  const handleClick = async () => {
+    setIsLoading(true);
+
+    try {
+      var dbmsType = document.getElementById("dbmsSelect").value;
+      var textLength = document.getElementById("dlugoscTekstuSelect").value;
+      var textType = document.getElementById("typZmiennejSelect").value;
+      console.log(dbmsType);
+      console.log(textLength);
+      console.log(textType);
       timePreFetch.current = (new Date()).getTime();
-      const url = `http://localhost:8080/porownajTexty?textLength=krotkie&textType=varchar&requestSentTimeStamp=${timePreFetch.current}&dbmsType=${dbmsType}`
-      fetch(url)
-         .then(response => {
-            return response.json()
-            }
-          )
-         .then(data => {
-          timePostFetch.current = (new Date()).getTime();
-          setComparisonData(data);
-         })
-         .catch((err) => {
-            console.log(err.message);
-         });
-   }, []);
-   var timeBackToFront = timePostFetch.current - comparisonData.czasWystawieniaOdpowiedziDlaFrontendu
+      const url = `http://localhost:8080/porownajTexty?textLength=${textLength}&textType=${textType}&requestSentTimeStamp=${timePreFetch.current}&dbmsType=${dbmsType}`
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+      timePostFetch.current = (new Date()).getTime();
+
+      if (!response.ok) {
+        throw new Error(`Error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      console.log('result is: ', JSON.stringify(result, null, 4));
+
+      setData(result);
+    } catch (err) {
+      setErr(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+   var timeBackToFront = timePostFetch.current - data.czasWystawieniaOdpowiedziDlaFrontendu
+
   return (
-    <div className="asdasd">
+    <div className="frontendView">
       <InfoBar />
       <ChoseTestParameters parametersFor="Text parameters" />
-      <button onClick={parentToChild}> Compare texts </button>
-      {showResults && <div>
+      <button onClick={handleClick}> Compare texts function</button>
+      {!isLoading && <div>
             <h1>Results</h1>
             <div>
-            czasPobieraniaTekstowZBazyDanych: {comparisonData.czasPobieraniaTekstowZBazyDanych} <br/>
-            czasPrzeslaniaRequestuZFrontuDoBackendu: {comparisonData.czasPrzeslaniaRequestuZFrontuDoBackendu} <br/>
+            czasPobieraniaTekstowZBazyDanych: {data.czasPobieraniaTekstowZBazyDanych} <br/>
+            czasPrzeslaniaRequestuZFrontuDoBackendu: {data.czasPrzeslaniaRequestuZFrontuDoBackendu} <br/>
             czasWystawieniaOdpowiedziDlaFrontendu: {timeBackToFront} <br/>
-            podobienstwoTextow: {comparisonData.podobienstwoTextow} <br/>
+            podobienstwoTextow: {data.podobienstwoTextow} <br/>
             </div>
         </div>}
     </div>
